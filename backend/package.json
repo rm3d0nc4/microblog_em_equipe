@@ -4,10 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "dev": "tsnd src/index.ts"
   },
   "devDependencies": {
-    "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "dependencies": {
@@ -18,6 +17,7 @@
     "express": "^4.18.2",
     "sequelize": "^6.31.1",
     "sqlite3": "^5.1.6",
+    "ts-node-dev": "^2.0.0",
     "tsyringe": "^4.7.0",
     "uuid": "^9.0.0"
   }
