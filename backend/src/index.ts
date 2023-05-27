@@ -2,10 +2,12 @@ import express, { Application} from "express";
 import errorMiddleware from "./core/middlewares/error_middleware";
 import { postRoutes } from "./routes/post_routes";
 import { commentRoutes } from "./routes/comment_routes";
+import cors from "cors";
 
 const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(cors())
 
 app.use(postRoutes);
 app.use(commentRoutes);
