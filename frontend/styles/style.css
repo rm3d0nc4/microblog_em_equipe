@@ -1,0 +1,9 @@
+input, textarea, button {
+    display: block;
+    margin-bottom: 1rem;
+}
+
+#buttons {
+    display: flex;
+    gap: 10px;
+} 
