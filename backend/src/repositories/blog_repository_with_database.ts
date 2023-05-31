@@ -11,7 +11,7 @@ import CommentImpl from '../core/entities/comment_impl';
 class BlogRepositoryWithDatabase implements BlogRepository, CommentableBLogRepository {
     
     async createPost(post: Post): Promise<void> {
-        await SPost.create({id: post.id, text: post.text, likes: post.likes})
+        await SPost.create({id: post.id, title: post.title, text: post.text, likes: post.likes})
     }
     
     async deletePost(id: string): Promise<void> {
@@ -37,7 +37,7 @@ class BlogRepositoryWithDatabase implements BlogRepository, CommentableBLogRepos
 
     async updatePost(post: Post): Promise<void> {
         const oldPost = await this.retrievePost(post.id)
-        await SPost.update({text: post.text, likes: post.likes}, {where: {id: oldPost.id}});
+        await SPost.update({title: post.title, text: post.text, likes: post.likes}, {where: {id: oldPost.id}});
     }
     
     async createComment(postId: string, comment: Comment): Promise<void> {

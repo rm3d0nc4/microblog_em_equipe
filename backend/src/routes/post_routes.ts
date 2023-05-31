@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response, Router, response } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 import { PostImpl } from '../core/entities/post_impl';
 import Post from '../core/contracts/post';
 import BlogRepository from '../core/contracts/blog_repository';
@@ -45,10 +45,10 @@ postRoutes.delete('/posts/:postId', async (request: Request, response: Response,
 
 postRoutes.post('/posts', async (request: Request, response: Response, next: NextFunction) => {
     try {
-        const {text} = request.body;
+        const {title, text} = request.body;
         if(!text) throw new AppError('O comentário precisa de um texto', 400)
 
-        const post = new PostImpl(text);
+        const post = new PostImpl(title, text);
         await repository.createPost(post);
         return response.status(201).json(post);
     } catch (error) {
@@ -61,10 +61,12 @@ postRoutes.put('/posts/:postId', async (request: Request, response: Response, ne
     try {
         const {postId} = request.params;
         const post: Post = await repository.retrievePost(postId as string);
-        const {text, likes} = request.body;
+        const {title, text, likes} = request.body;
+        if(!title) throw new AppError('O comentário precisa de um título', 400)
         if(!text) throw new AppError('O comentário precisa de um texto', 400)
         if(!likes) throw new AppError('O comentário precisa ter likes', 400)
 
+        post.title = title;
         post.text = text;
         post.likes = likes;
         
@@ -80,8 +82,9 @@ postRoutes.patch('/posts/:postId', async (request: Request, response: Response, 
     try {
         const {postId} = request.params;
         const post: Post = await repository.retrievePost(postId as string);
-        const {text, likes} = request.body;
-        if(!text && !likes) throw new AppError('Para atualizar post, pelo menos um valor deve ser alterado', 400)
+        const {title, text, likes} = request.body;
+        if(!text && !likes && !title) throw new AppError('Para atualizar post, pelo menos um valor deve ser alterado', 400)
+        post.title = title ?? post.title;
         post.text = text ?? post.text;
         post.likes = likes ?? post.likes;
         
@@ -102,7 +105,7 @@ postRoutes.patch('/posts/:postId/like', async (request: Request, response: Respo
     
         return response.status(200).json({
             likes: post.likes
-        });;
+        });
     } catch (error) {
         next(error)
     }

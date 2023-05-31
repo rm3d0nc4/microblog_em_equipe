@@ -8,6 +8,10 @@ SPost.init({
     type: DataTypes.STRING,
     allowNull: false
   },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
   text: {
     type: DataTypes.STRING,
     allowNull: false
