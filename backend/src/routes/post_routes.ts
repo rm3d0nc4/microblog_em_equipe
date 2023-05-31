@@ -100,7 +100,9 @@ postRoutes.patch('/posts/:postId/like', async (request: Request, response: Respo
         post.likes++;
         await repository.updatePost(post);
     
-        return response.status(200).send();
+        return response.status(200).json({
+            likes: post.likes
+        });;
     } catch (error) {
         next(error)
     }
