@@ -97,8 +97,15 @@ postRoutes.patch('/posts/:postId', async (request: Request, response: Response, 
 postRoutes.patch('/posts/:postId/like', async (request: Request, response: Response, next: NextFunction) => {
     try {
         const {postId} = request.params;
+        const {like} = request.body;
+
+        if(Object.keys(request.body).length !== 0 && !like) {
+            return response.status(400).send();
+        }
+        
+        
         const post: Post = await repository.retrievePost(postId as string);
-        post.likes++;
+        like ? post.likes += like : post.likes++;
         await repository.updatePost(post);
     
         return response.status(200).json({
