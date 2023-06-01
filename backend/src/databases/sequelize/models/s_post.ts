@@ -8,6 +8,10 @@ SPost.init({
     type: DataTypes.STRING,
     allowNull: false
   },
+  userId: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
   title: {
     type: DataTypes.STRING,
     allowNull: false
@@ -25,7 +29,6 @@ SPost.init({
   sequelize: db,
   modelName: 'SPost',
   tableName: 'Sposts',
-  timestamps: false
 });
 
 export default SPost;
