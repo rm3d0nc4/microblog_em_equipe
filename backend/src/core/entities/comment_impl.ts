@@ -8,7 +8,7 @@ export default class CommentImpl implements Comment{
     userId: string;
     createdAt?: Date;
 
-    constructor(userId: string, text: string, createdAt?: Date) {
+    constructor(text: string, userId: string, createdAt?: Date) {
         this.id = uuidv1();
         this.text = text;
         this.userId = userId;
