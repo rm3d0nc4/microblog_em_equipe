@@ -2,7 +2,6 @@ import { NextFunction, Request, Response, Router } from 'express';
 import { PostImpl } from '../core/entities/post_impl';
 import Post from '../core/contracts/post';
 import BlogRepository from '../core/contracts/blog_repository';
-import blogRepositoryWithMicroblog from '../repositories/blog_repository_with_microblog';
 import blogRepositoryWithDatabase from '../repositories/blog_repository_with_database';
 import AppError from '../core/errors/app_error';
 
@@ -45,11 +44,10 @@ postRoutes.delete('/posts/:postId', async (request: Request, response: Response,
 
 postRoutes.post('/posts', async (request: Request, response: Response, next: NextFunction) => {
     try {
-        const {title, text} = request.body;
+        const {title, text, userId} = request.body;
         if(!text) throw new AppError('O comentário precisa de um texto', 400)
 
-        const post = new PostImpl(title, text);
-        await repository.createPost(post);
+        const post: Post = await repository.createPost(new PostImpl(title, userId, text));
         return response.status(201).json(post);
     } catch (error) {
         next(error)

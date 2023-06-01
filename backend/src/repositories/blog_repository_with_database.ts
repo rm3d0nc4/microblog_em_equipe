@@ -10,8 +10,9 @@ import CommentImpl from '../core/entities/comment_impl';
 
 class BlogRepositoryWithDatabase implements BlogRepository, CommentableBLogRepository {
     
-    async createPost(post: Post): Promise<void> {
-        await SPost.create({id: post.id, title: post.title, text: post.text, likes: post.likes})
+    async createPost(post: Post): Promise<Post> {
+        const newPost = await SPost.create({id: post.id, userId: post.userId, title: post.title, text: post.text, likes: post.likes})
+        return newPost.get() as PostImpl;
     }
     
     async deletePost(id: string): Promise<void> {
@@ -40,8 +41,10 @@ class BlogRepositoryWithDatabase implements BlogRepository, CommentableBLogRepos
         await SPost.update({title: post.title, text: post.text, likes: post.likes}, {where: {id: oldPost.id}});
     }
     
-    async createComment(postId: string, comment: Comment): Promise<void> {
-        await SComment.create({id: comment.id, text: comment.text, postId: postId})
+    async createComment(postId: string, comment: Comment): Promise<Comment> {
+        const newComment = await SComment.create({id: comment.id, userId: comment.userId, text: comment.text, postId: postId})
+        
+        return newComment.get() as CommentImpl
     }
     
     async retrieveCommnent(postId: string, commentId: string): Promise<Comment> {

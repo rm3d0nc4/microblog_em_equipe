@@ -1,9 +1,7 @@
 import { NextFunction, Request, Response, Router } from "express";
-import BlogRepository from "../core/contracts/blog_repository";
 import blogRepositoryWithDatabase from "../repositories/blog_repository_with_database";
 import Comment from "../core/contracts/comment";
 import CommentableBLogRepository from "../core/contracts/commentable_blog_repository";
-import { request } from "http";
 import CommentImpl from "../core/entities/comment_impl";
 import AppError from "../core/errors/app_error";
 
@@ -45,11 +43,10 @@ commentRoutes.get('/allComments', async (request: Request, response: Response, n
 commentRoutes.post('/posts/:postId/comments', async (request: Request, response: Response, next: NextFunction) => {
     try {
         const {postId} = request.params
-        const {text} = request.body;
+        const {text, userId} = request.body;
         if(!text) throw new AppError('O comentário precisa de um texto', 400)
 
-        const comment: Comment = new CommentImpl(text)
-        await repository.createComment(postId, comment);
+        const comment: Comment = await repository.createComment(postId, new CommentImpl(text, userId));
 
         return response.status(201).json(comment)
     } catch (error) {
