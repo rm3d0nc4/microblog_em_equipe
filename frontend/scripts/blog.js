@@ -10,7 +10,8 @@ const onClickDelete = async(postId) => {
     const confirmation = confirm("Are you sure you wanna delete the post? ") 
     if (confirmation) {
         const response = await fetch(`http://localhost:3000/posts/${postId}`, options)
-        if (response.status == 200) {
+        if (response.ok) {
+            deletePost(postId);
             alert("The post were deleted");
         } else {
             alert("The post wasnt deleted");
@@ -28,6 +29,10 @@ const onClickLike = async (event, postId) => {
     }
 
     const response = await fetch(`http://localhost:3000/posts/${postId}/like`, options)
+
+    if(response.ok) {
+        likePost(postId)
+    }
 }
 
 const loadPosts = async () => {
@@ -44,15 +49,15 @@ const loadPosts = async () => {
     });
 }
 
-async function addPost() {
-    
+const addPost = async (event) => {
+    event.preventDefault();  
     const title = document.getElementById('post-tile').value;
     const text = document.getElementById('post-text').value;
 
     if (title && text) {
         const newPost = {
-            "title": document.getElementById('post-tile').value,
-            "text": document.getElementById('post-text').value,
+            "title": title,
+            "text": text,
         };
     
         const config = {
@@ -66,12 +71,10 @@ async function addPost() {
         const response = await fetch('http://localhost:3000/posts', config);
         const post = await response.json();
         appendPost(post);
-        () => loadPosts()
     }
 }
 
- 
-appendPost = (post) => {
+const appendPost = (post) => {
     const template = document.getElementById('post-template');
     const postElement = document.importNode(template.content, true);
     const buttons = postElement.querySelectorAll("button");
@@ -82,19 +85,34 @@ appendPost = (post) => {
     postTitle.innerText = post.title;
     const postItens = postElement.querySelectorAll('p')
     postItens[0].innerText = post.text;
-    postItens[1].innerText = post.likes + " like(s)";
+    postItens[1].innerText = post.likes +" like(s)";
     
     const article = postElement.querySelectorAll('article')[0]
     article.id = post.id
-    likeButton.id = post.id
-
+    
     document.getElementById('timeline').append(postElement);
     likeButton.addEventListener('click', (event) => onClickLike(event, post.id));
     deleteButton.addEventListener('click', () => onClickDelete(post.id));
 }
 
+const likePost = (postId) => {
+    const postElement = document.getElementById(postId);
+    const postItens = postElement.querySelectorAll('p')
+    const likes = postItens[1].innerText;
+    const newLikes = Number(likes.split(' ')[0]) + 1;
+    postItens[1].innerText = newLikes + ' like(s)';
+}
+
+
+const deletePost = (postId) => {
+    const postElement = document.getElementById(postId);
+    postElement.remove()
+}
+
 window.onload = () => {
-    const btnAddPost = document.getElementById('add-post')
-    btnAddPost.onclick = addPost;
+    const postForm = document.getElementById('new-post')
+    postForm.onsubmit = addPost;
+
+
     loadPosts()
 }
