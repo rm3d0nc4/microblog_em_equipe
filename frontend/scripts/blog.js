@@ -1,11 +1,6 @@
 const onClickComments = async (postId) => {
     const commentsSection = document.getElementById(postId).querySelector(".post-comments")
     
-    // console.log("Size of inner html " + commentsSection.innerHTML.length)
-
-    // console.log("Before")
-    // console.log(commentsSection.innerText.trim() === "")
-    
     if (commentsSection.innerText.trim() === '') {
         const response = await fetch(`http://localhost:3000/posts/${postId}/comments`)
         if (response.ok) {
@@ -15,11 +10,6 @@ const onClickComments = async (postId) => {
             })
         }
     }
-
-    // console.log("After")
-
-    // console.log(commentsSection.innerText.trim() === "")
-
 
     if (commentsSection.style.display === 'inline') {
         commentsSection.style.display = 'none'
