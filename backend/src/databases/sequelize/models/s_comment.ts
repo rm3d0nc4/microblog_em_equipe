@@ -25,7 +25,6 @@ SComment.init({
   sequelize: db,
   modelName: 'SComment',
   tableName: 'SComment',
-  timestamps: false
 });
 
 export default SComment;
