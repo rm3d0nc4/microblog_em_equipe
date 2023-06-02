@@ -11,3 +11,14 @@ input, textarea, button {
 .post-comments {
     display: none;
 }
+
+.comment {
+    /* color: rebeccapurple; */
+    display: flex;
+    
+}
+
+.comment textarea{
+    margin-right: 5px;
+    display: none;
+}
