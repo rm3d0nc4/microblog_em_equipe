@@ -42,6 +42,7 @@ class BlogRepositoryWithDatabase implements BlogRepository, CommentableBLogRepos
     }
     
     async createComment(postId: string, comment: Comment): Promise<Comment> {
+        this.retrievePost(postId);
         const newComment = await SComment.create({id: comment.id, userId: comment.userId, text: comment.text, postId: postId})
         
         return newComment.get() as CommentImpl
@@ -61,7 +62,10 @@ class BlogRepositoryWithDatabase implements BlogRepository, CommentableBLogRepos
 
     async retrieveAllCommentsByPost(postId: string): Promise<Comment[]> {
         const comments = await SComment.findAll({
-            where:{ postId: postId }
+            where:{ postId: postId },
+            order: [
+                ['createdAt','DESC']
+            ]
         })
         return comments.map((comment) => comment.get() as CommentImpl);
     }
