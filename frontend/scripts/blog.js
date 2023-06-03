@@ -1,13 +1,32 @@
 const onClickComments = async (postId) => {
     const commentsSection = document.getElementById(postId).querySelector(".post-comments")
-    
+
     if (commentsSection.innerText.trim() === '') {
         const response = await fetch(`http://localhost:3000/posts/${postId}/comments`)
         if (response.ok) {
             const comments = await response.json()
-            comments.forEach((comment) => {
-                appendComment(comment)
-            })
+            console.log(comments)
+            if (comments.length > 3) {
+                for (let i = 0; i < 3; i++) {
+                    appendComment(comments[i])
+                }
+                const showMoreButton = document.createElement('button')
+                showMoreButton.innerText = "Show more..."
+                showMoreButton.addEventListener('click', () => {
+                    for (let i = 3; i < comments.length; i++) {
+                        appendComment(comments[i])
+                    }
+                    showMoreButton.parentNode.removeChild(showMoreButton)
+                    commentsSection.append(showMoreButton)    
+                    showMoreButton.innerText = "Show more..."                
+                    showMoreButton.disabled = true
+                })
+                commentsSection.append(showMoreButton)
+            }
+            
+            // comments.forEach((comment) => {
+            //     appendComment(comment)
+            // })
         }
     }
 
@@ -62,7 +81,7 @@ const onClickLike = async (event, postId) => {
     }
 
     const response = await fetch(`http://localhost:3000/posts/${postId}/like`, options)
-
+    console.log(postId)
     if(response.ok) {
         likePost(postId)
     }
