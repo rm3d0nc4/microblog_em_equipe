@@ -108,9 +108,9 @@ const addPost = async (event) => {
 
     if (title && text) {
         const newPost = {
-            "userId": "ofhfhasdfhasdufh",
             "title": title,
-            "text": text
+            "text": text,
+            "userId": "123abcde"
         };
     
         const config = {
@@ -122,7 +122,8 @@ const addPost = async (event) => {
         };
     
         const response = await fetch('http://localhost:3000/posts', config);
-        if (response.ok) {
+
+        if(response.ok) {
             const post = await response.json();
             appendPost(post);
         }
@@ -136,6 +137,7 @@ const appendPost = (post) => {
     const likeButton = buttons[0];
     const deleteButton = buttons[1];
     const comentariosButton = buttons[2];
+    const commentButton = buttons[3];
     
     const postTitle = postElement.querySelectorAll('h3')[0]
     postTitle.innerText = post.title;
@@ -145,11 +147,12 @@ const appendPost = (post) => {
     
     const article = postElement.querySelectorAll('article')[0]
     article.id = post.id
-    
+
     document.getElementById('timeline').append(postElement);
     likeButton.addEventListener('click', (event) => onClickLike(event, post.id));
     deleteButton.addEventListener('click', () => onClickDelete(post.id));
     comentariosButton.addEventListener('click', () => onClickComments(post.id));
+    commentButton.addEventListener('click', (event) => openComment(event, post.id));
 }
 
 const likePost = (postId) => {
@@ -165,10 +168,21 @@ const deletePost = (postId) => {
     postElement.remove()
 }
 
+const openComment = (event, postId) => {
+    const commentSection = document.getElementById(postId).querySelector('.comment')
+    const textArea = commentSection.querySelector('.comment-text')
+    // console.log(textArea)
+    if(textArea.style.display === 'inline') {
+        textArea.style.display = 'none';
+    } else {
+        textArea.style.display = 'inline';
+    }
+    
+}
+
 window.onload = () => {
     const postForm = document.getElementById('new-post')
     postForm.onsubmit = addPost;
-
 
     loadPosts()
 }
