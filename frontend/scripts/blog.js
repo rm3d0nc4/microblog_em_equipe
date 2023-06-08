@@ -5,7 +5,6 @@ const onClickComments = async (postId) => {
         const response = await fetch(`http://localhost:3000/posts/${postId}/comments`)
         if (response.ok) {
             const comments = await response.json()
-            console.log(comments)
             if (comments.length > 3) {
                 for (let i = 0; i < 3; i++) {
                     appendComment(comments[i])
@@ -138,6 +137,7 @@ const appendPost = (post) => {
     const deleteButton = buttons[1];
     const comentariosButton = buttons[2];
     const commentButton = buttons[3];
+    const cancelButton = buttons[4];
     
     const postTitle = postElement.querySelectorAll('h3')[0]
     postTitle.innerText = post.title;
@@ -152,7 +152,8 @@ const appendPost = (post) => {
     likeButton.addEventListener('click', (event) => onClickLike(event, post.id));
     deleteButton.addEventListener('click', () => onClickDelete(post.id));
     comentariosButton.addEventListener('click', () => onClickComments(post.id));
-    commentButton.addEventListener('click', (event) => openComment(event, post.id));
+    commentButton.addEventListener('click', (event) => makeComment(event, post.id));
+    cancelButton.addEventListener('click', (event) => cancelComment(event, post.id));
 }
 
 const likePost = (postId) => {
@@ -168,14 +169,46 @@ const deletePost = (postId) => {
     postElement.remove()
 }
 
-const openComment = (event, postId) => {
+const cancelComment = async (event, postId) => {
+    event.preventDefault();
+    const commentSection = document.getElementById(postId).querySelector('.comment')
+    const textArea = commentSection.querySelector('.comment-text')
+
+    if (textArea.value != '') {
+        textArea.value = ''
+    }
+    
+    textArea.style.display = 'none'
+}
+
+const makeComment = async (event, postId) => {
+    event.preventDefault()
     const commentSection = document.getElementById(postId).querySelector('.comment')
     const textArea = commentSection.querySelector('.comment-text')
     // console.log(textArea)
-    if(textArea.style.display === 'inline') {
-        textArea.style.display = 'none';
+    if (textArea.style.display === 'inline') {
+            if (textArea.value != '') {
+                const data = {
+                    "text": `${textArea.value}`,
+                    "userId": `Administrator`
+                }
+                const options = {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data)
+                }
+                const response = await fetch(`http://localhost:3000/posts/${postId}/comments/`, options)
+                response.ok ? textArea.value = '' : alert(response.status)
+                textArea.style.display = 'none';
+            } else {
+                alert("Não pode submeter um formulário vaziu")
+            }
+        //textArea.required = false
     } else {
         textArea.style.display = 'inline';
+        textArea.required = true;
     }
     
 }
