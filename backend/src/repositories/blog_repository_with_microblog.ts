@@ -5,8 +5,9 @@ import BlogRepository from "../core/contracts/blog_repository";
 class BlogRepositoryWithMicroblog implements BlogRepository {
     microblog: Microblog = new Microblog();
     
-    async createPost(post: Post): Promise<void> {
-        return this.microblog.create(post);
+    async createPost(post: Post): Promise<Post> {
+        await this.microblog.create(post);
+        return post;
     }
     async deletePost(id: string): Promise<void> {
         this.microblog.delete(id);
