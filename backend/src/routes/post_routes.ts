@@ -4,6 +4,7 @@ import Post from '../core/contracts/post';
 import BlogRepository from '../core/contracts/blog_repository';
 import blogRepositoryWithDatabase from '../repositories/blog_repository_with_database';
 import AppError from '../core/errors/app_error';
+import authMiddleware from '../core/middlewares/auth_middleware';
 
 
 export const postRoutes: Router = Router();
@@ -31,10 +32,21 @@ postRoutes.get('/posts/:postId', async (request: Request, response: Response, ne
     }
     
 })
-postRoutes.delete('/posts/:postId', async (request: Request, response: Response, next: NextFunction) => {
+postRoutes.delete('/posts/:postId', authMiddleware, async (request: Request, response: Response, next: NextFunction) => {
     try {
         const {postId} = request.params;
-        await repository.deletePost(postId as string);
+        const {userId} = request.headers;
+        
+        const post = await repository.retrievePost(postId)
+
+        console.log(post.SUserId);
+        console.log(userId);
+
+        if(post.SUserId !== userId) {
+            throw new AppError('Você não pode apagar posts que não são seus!', 401);
+        }
+        
+        await repository.deletePost(postId);
         return response.status(204).send();
     } catch (error) {
         next(error)
@@ -42,12 +54,17 @@ postRoutes.delete('/posts/:postId', async (request: Request, response: Response,
     
 })
 
-postRoutes.post('/posts', async (request: Request, response: Response, next: NextFunction) => {
+postRoutes.post('/posts', authMiddleware,  async (request: Request, response: Response, next: NextFunction) => {
     try {
-        const {title, text, userId} = request.body;
-        if(!text) throw new AppError('O comentário precisa de um texto', 400)
+        const {title, text} = request.body;
+        console.log(request.headers);
+        const { userId } = request.headers;
 
-        const post: Post = await repository.createPost(new PostImpl(title, userId, text));
+        if(!text) throw new AppError('O post precisa de um texto', 400)
+        if(!title) throw new AppError('O post precisa de um título', 400)
+        if(!userId) throw new AppError('O post deve estar associado a um usuário', 400)
+
+        const post: Post = await repository.createPost(new PostImpl(title, userId as string, text));
         return response.status(201).json(post);
     } catch (error) {
         next(error)
@@ -55,10 +72,17 @@ postRoutes.post('/posts', async (request: Request, response: Response, next: Nex
 
 })
 
-postRoutes.put('/posts/:postId', async (request: Request, response: Response, next: NextFunction) => {
+postRoutes.put('/posts/:postId', authMiddleware, async (request: Request, response: Response, next: NextFunction) => {
     try {
         const {postId} = request.params;
+        const {userId} = request.headers;
+
         const post: Post = await repository.retrievePost(postId as string);
+        
+        if(post.SUserId !== userId) {
+            throw new AppError('Você não pode editar posts que não são seus!', 401);
+        }
+
         const {title, text, likes} = request.body;
         if(!title) throw new AppError('O comentário precisa de um título', 400)
         if(!text) throw new AppError('O comentário precisa de um texto', 400)
@@ -76,10 +100,17 @@ postRoutes.put('/posts/:postId', async (request: Request, response: Response, ne
     }
 
 })
-postRoutes.patch('/posts/:postId', async (request: Request, response: Response, next: NextFunction) => {
+postRoutes.patch('/posts/:postId', authMiddleware,  async (request: Request, response: Response, next: NextFunction) => {
     try {
         const {postId} = request.params;
+        const {userId} = request.headers;
+        
         const post: Post = await repository.retrievePost(postId as string);
+
+        if(post.SUserId !== userId) {
+            throw new AppError('Você não pode editar posts que não são seus!', 401);
+        }
+
         const {title, text, likes} = request.body;
         if(!text && !likes && !title) throw new AppError('Para atualizar post, pelo menos um valor deve ser alterado', 400)
         post.title = title ?? post.title;
