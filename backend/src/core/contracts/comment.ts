@@ -1,6 +1,6 @@
 export default interface Comment {
     id: string;
-    userId: string;
+    SUserId: string;
     text: string;
     createdAt?: Date;
     

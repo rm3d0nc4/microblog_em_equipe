@@ -1,6 +1,6 @@
 export default interface Post {
     id: string;
-    userId: string;
+    SUserId: string;
     title: string;
     text: string;
     likes: number;
