@@ -8,14 +8,6 @@ SComment.init({
     type: DataTypes.STRING,
     allowNull: false
   },
-  userId: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  postId: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
   text: {
     type: DataTypes.STRING,
     allowNull: false
@@ -24,7 +16,7 @@ SComment.init({
 {
   sequelize: db,
   modelName: 'SComment',
-  tableName: 'SComment',
+  tableName: 'SComment'
 });
 
 export default SComment;

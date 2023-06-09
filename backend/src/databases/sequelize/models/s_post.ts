@@ -1,14 +1,11 @@
 import { DataTypes, Model } from "sequelize";
 import db from "../db";
+import SComment from "./s_comment";
 
 class SPost extends Model {}
 SPost.init({
   id: {
     primaryKey: true,
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  userId: {
     type: DataTypes.STRING,
     allowNull: false
   },
@@ -30,5 +27,8 @@ SPost.init({
   modelName: 'SPost',
   tableName: 'Sposts',
 });
+
+SPost.hasMany(SComment)
+SComment.belongsTo(SPost)
 
 export default SPost;
