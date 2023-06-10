@@ -1,16 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
     const registerButton = document.querySelector('button')
-    loginButton.addEventListener('click', (event) => {
+    registerButton.addEventListener('click', (event) => {
         event.preventDefault()
         const loginData = document.getElementById('loginData')
         const name = loginData[0].value;
         const email = loginData[1].value;
         const password = loginData[2].value;
-        login(email, password)
+        register(name, email, password)
     })
 })
-const login = async (email, password) => {
-    console.log("User: " + email)
-    console.log("Password: " + password)
+const register = async (name, email, password) => {
+    const data = {
+        "name": `${name}`,
+        "email": `${email}`,
+        "password": `${password}`
+    }
+
+    const options = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data)
+    }
+
+    const response = await fetch(`http://localhost:3000/register/`, options);
     
+    if (response.ok) {
+        console.log("Usuario cadastrado")
+    }
 }
