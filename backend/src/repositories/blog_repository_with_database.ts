@@ -53,7 +53,7 @@ class BlogRepositoryWithDatabase implements BlogRepository, CommentableBLogRepos
     
     async retrieveCommnent(postId: string, commentId: string): Promise<Comment> {
         const comment = await SComment.findOne({where: {
-            postId: postId,
+            SPostId: postId,
             id: commentId,
         }});
         if(comment) {
@@ -65,7 +65,7 @@ class BlogRepositoryWithDatabase implements BlogRepository, CommentableBLogRepos
     
     async retrieveAllCommentsByPost(postId: string): Promise<Comment[]> {
         const comments = await SComment.findAll({
-            where:{ postId: postId },
+            where:{ SPostId: postId },
             order: [
                 ['createdAt','DESC']
             ]
@@ -80,25 +80,34 @@ class BlogRepositoryWithDatabase implements BlogRepository, CommentableBLogRepos
     
     async updateComment(postId: string, comment: Comment): Promise<void> {
         const currentComment = await this.retrieveCommnent(postId, comment.id)
-        await SComment.update({text: comment.text}, {where: {postId: postId, id: currentComment.id}})
+        await SComment.update({text: comment.text}, {where: {SPostId: postId, id: currentComment.id}})
     }
     
     async deleteComment(postId: string, commentId: string): Promise<void> {
         const comment = await this.retrieveCommnent(postId, commentId)
-        await SComment.destroy({where: {postId: postId, id: comment.id}})
+        await SComment.destroy({where: {SPostId: postId, id: comment.id}})
     }
     
     async createUser(user: User): Promise<void> {
         
         await SUser.create({id: user.id, name: user.name, email: user.email, password: user.password })
     }
-    async retrieveUser(email: string): Promise<User> {
+    async retrieveUserByEmail(email: string): Promise<User> {
         const user = await SUser.findOne({where: {email: email}})
         if(user) {
             return user.get() as User;
         }
-        throw new AppError('Usuário não encontrado!', 404)
+        throw new AppError('Usuário não encontrado!', 404);
     }
+
+    async retrieveUserById(id: string): Promise<User> {
+        const user = await SUser.findOne({where:{id: id}})
+        if(user) {
+            return user.get() as User;
+        }
+        throw new AppError('Usuário não encontrado!', 404);
+    }
+
     async retrieveAllUsers(): Promise<User[]> {
         const users =  await SUser.findAll();
 

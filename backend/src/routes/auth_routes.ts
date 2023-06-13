@@ -30,7 +30,7 @@ authRoutes.post('/register', async (request: Request, response: Response, next: 
             throw new AppError('Nome obrigatório!', 400);
         } 
 
-        const existingUser = await repository.retrieveUser(email).catch((error: Error) => {
+        const existingUser = await repository.retrieveUserByEmail(email).catch((error: Error) => {
             if(error instanceof AppError) {
                 if(error.status !== 404) {
                     throw error;
@@ -75,7 +75,7 @@ authRoutes.post('/login', async (request: Request, response: Response, next: Nex
             throw new AppError('Senha obrigatória', 400);
         } 
         
-        const user: User = await repository.retrieveUser(email);
+        const user: User = await repository.retrieveUserByEmail(email);
         
         const validPassword = await bcrypt.compare(password, user.password);
         if(!validPassword) {

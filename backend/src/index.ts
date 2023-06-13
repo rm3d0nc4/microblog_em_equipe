@@ -4,6 +4,7 @@ import cors from "cors";
 import { postRoutes } from "./routes/post_routes";
 import { commentRoutes } from "./routes/comment_routes";
 import { authRoutes } from "./routes/auth_routes";
+import { userRoutes } from "./routes/user_routes";
 
 const app: Application = express();
 
@@ -14,6 +15,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(cors())
 
 app.use(authRoutes);
+app.use(userRoutes);
 app.use(postRoutes);
 app.use(commentRoutes);
 
