@@ -36,36 +36,45 @@ const onClickComments = async (postId) => {
     }
 }
 
-const appendComment = (comment) => {
+const appendComment = async (comment) => {
     const template = document.querySelector("#comments-template")
     const commentElement = document.importNode(template.content, true)
 
     const author = commentElement.querySelector("h4")
     const text = commentElement.querySelector("p")
-
-    author.innerText = comment.userId
+    const userName = await getUserName(comment.SUserId);
+    
+    author.innerText = userName;
     text.innerText = comment.text
 
     document.querySelector('.post-comments').append(commentElement)
 }
 
-const onClickDelete = async(postId) => {
+const onClickDelete = async (postId) => {
     const options = {
         "method": 'DELETE',
         "mode": 'cors',
         "headers": {
             "Content-Type": "application/json",
+            "Authorization": 'Bearer ' + localStorage.getItem('access-token')
         },
     }
 
     const confirmation = confirm("Are you sure you wanna delete the post? ") 
     if (confirmation) {
         const response = await fetch(`http://localhost:3000/posts/${postId}`, options)
+        
         if (response.ok) {
             deletePost(postId);
             alert("The post were deleted");
         } else {
-            alert("The post wasnt deleted");
+            if(response.status === 403) {
+                localStorage.clear()
+                window.location.href = './auth.html'
+            }
+
+            const body = await response.json();
+            alert(body.message);
         }
     }
 }
@@ -109,22 +118,29 @@ const addPost = async (event) => {
         const newPost = {
             "title": title,
             "text": text,
-            "userId": "123abcde"
         };
     
         const config = {
             'method': 'POST',
             'headers': {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('access-token')
             },
             body: JSON.stringify(newPost)
         };
     
         const response = await fetch('http://localhost:3000/posts', config);
+        const post = await response.json();
 
         if(response.ok) {
-            const post = await response.json();
             appendPost(post);
+        } else {
+            if(response.status === 403) {
+                localStorage.clear()
+                window.location.href = './auth.html'
+            }
+
+            alert(post.message)
         }
     }
 }
@@ -189,18 +205,29 @@ const makeComment = async (event, postId) => {
     if (textArea.style.display === 'inline') {
             if (textArea.value != '') {
                 const data = {
-                    "text": `${textArea.value}`,
-                    "userId": `Administrator`
+                    "text": textArea.value,
                 }
                 const options = {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        'Authorization': 'Bearer ' + localStorage.getItem('access-token')
                     },
                     body: JSON.stringify(data)
                 }
                 const response = await fetch(`http://localhost:3000/posts/${postId}/comments/`, options)
-                response.ok ? textArea.value = '' : alert(response.status)
+                const body = await response.json();
+
+                if(response.ok) {
+                    textArea.value = ''
+                } else {
+                    if(response.status === 403) {
+                        localStorage.clear()
+                        window.location.href = './auth.html'
+                    }
+                    alert(body.message)
+                }
+                 
                 textArea.style.display = 'none';
             } else {
                 alert("Não pode submeter um formulário vaziu")
@@ -211,6 +238,18 @@ const makeComment = async (event, postId) => {
         textArea.required = true;
     }
     
+}
+
+
+const getUserName = async (userId) => {
+    const response = await fetch(`http://localhost:3000/users/${userId}/`);
+
+    if(response.ok) {
+        const user = await response.json()
+        return user.name;
+    } else {
+        return 'Usuário não localizado'
+    }
 }
 
 window.onload = () => {
