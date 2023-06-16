@@ -1,150 +1,3 @@
-const onClickComments = async (postId) => {
-    const commentsSection = document.getElementById(postId).querySelector(".post-comments")
-
-    if (commentsSection.innerText.trim() === '') {
-        const response = await fetch(`http://localhost:3000/posts/${postId}/comments`)
-        if (response.ok) {
-            const comments = await response.json()
-            if (comments.length > 3) {
-                for (let i = 0; i < 3; i++) {
-                    appendComment(comments[i])
-                }
-                const showMoreButton = document.createElement('button')
-                showMoreButton.innerText = "Show more..."
-                showMoreButton.addEventListener('click', () => {
-                    for (let i = 3; i < comments.length; i++) {
-                        appendComment(comments[i])
-                    }
-                    showMoreButton.parentNode.removeChild(showMoreButton)
-                    commentsSection.append(showMoreButton)    
-                    showMoreButton.innerText = "Show more..."                
-                    showMoreButton.disabled = true
-                })
-                commentsSection.append(showMoreButton)
-            }
-            
-            // comments.forEach((comment) => {
-            //     appendComment(comment)
-            // })
-        }
-    }
-
-    if (commentsSection.style.display === 'inline') {
-        commentsSection.style.display = 'none'
-    } else {
-        commentsSection.style.display = 'inline'
-    }
-}
-
-const appendComment = async (comment) => {
-    const template = document.querySelector("#comments-template")
-    const commentElement = document.importNode(template.content, true)
-
-    const author = commentElement.querySelector("h4")
-    const text = commentElement.querySelector("p")
-    const userName = await getUserName(comment.SUserId);
-    
-    author.innerText = userName;
-    text.innerText = comment.text
-
-    document.querySelector('.post-comments').append(commentElement)
-}
-
-const onClickDelete = async (postId) => {
-    const options = {
-        "method": 'DELETE',
-        "mode": 'cors',
-        "headers": {
-            "Content-Type": "application/json",
-            "Authorization": 'Bearer ' + localStorage.getItem('access-token')
-        },
-    }
-
-    const confirmation = confirm("Are you sure you wanna delete the post? ") 
-    if (confirmation) {
-        const response = await fetch(`http://localhost:3000/posts/${postId}`, options)
-        
-        if (response.ok) {
-            deletePost(postId);
-            alert("The post were deleted");
-        } else {
-            if(response.status === 403) {
-                localStorage.clear()
-                window.location.href = './auth.html'
-            }
-
-            const body = await response.json();
-            alert(body.message);
-        }
-    }
-}
-
-const onClickLike = async (event, postId) => {
-    const options = {
-        "method": 'PATCH',
-        "mode": 'cors',
-        "headers": {
-            "Content-Type": "application/json",
-          },
-    }
-
-    const response = await fetch(`http://localhost:3000/posts/${postId}/like`, options)
-    console.log(postId)
-    if(response.ok) {
-        likePost(postId)
-    }
-}
-
-const loadPosts = async () => {
-
-    const options = {
-        'method': 'GET',
-        'Content-Type': 'application/json'
-    }
-    const response = await fetch('http://localhost:3000/posts/', options)
-    const posts = await response.json()
-
-    posts.forEach(post => {
-        appendPost(post);
-    });
-}
-
-const addPost = async (event) => {
-    event.preventDefault();  
-    const title = document.getElementById('post-tile').value;
-    const text = document.getElementById('post-text').value;
-
-    if (title && text) {
-        const newPost = {
-            "title": title,
-            "text": text,
-        };
-    
-        const config = {
-            'method': 'POST',
-            'headers': {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('access-token')
-            },
-            body: JSON.stringify(newPost)
-        };
-    
-        const response = await fetch('http://localhost:3000/posts', config);
-        const post = await response.json();
-
-        if(response.ok) {
-            appendPost(post);
-        } else {
-            if(response.status === 403) {
-                localStorage.clear()
-                window.location.href = './auth.html'
-            }
-
-            alert(post.message)
-        }
-    }
-}
-
 const appendPost = (post) => {
     const template = document.getElementById('post-template');
     const postElement = document.importNode(template.content, true);
@@ -166,9 +19,9 @@ const appendPost = (post) => {
 
     document.getElementById('timeline').append(postElement);
     likeButton.addEventListener('click', (event) => onClickLike(event, post.id));
-    deleteButton.addEventListener('click', () => onClickDelete(post.id));
+    deleteButton.addEventListener('click', (event) => onClickDeletePost(event, post.id));
     comentariosButton.addEventListener('click', () => onClickComments(post.id));
-    commentButton.addEventListener('click', (event) => makeComment(event, post.id));
+    commentButton.addEventListener('click', (event) => onClickMakeComment(event, post.id));
     cancelButton.addEventListener('click', (event) => cancelComment(event, post.id));
 }
 
@@ -185,76 +38,44 @@ const deletePost = (postId) => {
     postElement.remove()
 }
 
-const cancelComment = async (event, postId) => {
-    event.preventDefault();
-    const commentSection = document.getElementById(postId).querySelector('.comment')
-    const textArea = commentSection.querySelector('.comment-text')
-
-    if (textArea.value != '') {
-        textArea.value = ''
-    }
+const appendComment = async (comment) => {
+    const template = document.querySelector("#comments-template")
+    const commentElement = document.importNode(template.content, true)
     
-    textArea.style.display = 'none'
+    const deleteButton = commentElement.querySelector('button');
+    deleteButton.addEventListener('click', (event) => onClickDeleteComment(event, comment))
+
+    const author = commentElement.querySelector("h4")
+    const text = commentElement.querySelector("p")
+    const userName = await getUserName(comment.SUserId);
+    
+    author.innerText = userName;
+    text.innerText = comment.text
+
+    document.querySelector('.post-comments').append(commentElement)
 }
 
-const makeComment = async (event, postId) => {
-    event.preventDefault()
-    const commentSection = document.getElementById(postId).querySelector('.comment')
-    const textArea = commentSection.querySelector('.comment-text')
-    // console.log(textArea)
-    if (textArea.style.display === 'inline') {
-            if (textArea.value != '') {
-                const data = {
-                    "text": textArea.value,
-                }
-                const options = {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        'Authorization': 'Bearer ' + localStorage.getItem('access-token')
-                    },
-                    body: JSON.stringify(data)
-                }
-                const response = await fetch(`http://localhost:3000/posts/${postId}/comments/`, options)
-                const body = await response.json();
-
-                if(response.ok) {
-                    textArea.value = ''
-                } else {
-                    if(response.status === 403) {
-                        localStorage.clear()
-                        window.location.href = './auth.html'
-                    }
-                    alert(body.message)
-                }
-                 
-                textArea.style.display = 'none';
-            } else {
-                alert("Não pode submeter um formulário vaziu")
-            }
-        //textArea.required = false
-    } else {
-        textArea.style.display = 'inline';
-        textArea.required = true;
-    }
+const appendCommentOnTop = async (comment) => {
+    const commentSection = document.querySelector('.post-comments')
+    const template = document.querySelector("#comments-template")
+    const commentElement = document.importNode(template.content, true)
     
-}
+    const deleteButton = commentElement.querySelector('button');
+    deleteButton.addEventListener('click', (event) => onClickDeleteComment(event, comment))
 
-
-const getUserName = async (userId) => {
-    const response = await fetch(`http://localhost:3000/users/${userId}/`);
-
-    if(response.ok) {
-        const user = await response.json()
-        return user.name;
-    } else {
-        return 'Usuário não localizado'
-    }
+    const author = commentElement.querySelector("h4")
+    const text = commentElement.querySelector("p")
+    const userName = await getUserName(comment.SUserId);
+    
+    author.innerText = userName;
+    text.innerText = comment.text
+    
+    commentSection.insertBefore(commentElement, commentSection.firstChild)
 }
 
 window.onload = () => {
     const postForm = document.getElementById('new-post')
-    postForm.onsubmit = addPost;
+    postForm.onsubmit = addPost
 
     loadPosts()
 }
