@@ -63,7 +63,7 @@ commentRoutes.delete('/posts/:postId/comments/:commentId', authMiddleware, async
         const comment: Comment = await repository.retrieveCommnent(postId, commentId);
 
         if(comment.SUserId !== userId) {
-            throw new AppError('Você não pode apagar posts que não são seus!', 401);
+            throw new AppError('Você não pode apagar comentários que não são seus!', 401);
         }
 
         await repository.deleteComment(postId, commentId)
