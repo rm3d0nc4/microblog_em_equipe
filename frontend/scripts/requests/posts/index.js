@@ -53,7 +53,6 @@ const addPost = async (event) => {
 }
 
 const onClickDeletePost = async (event, postId) => {
-    console.log(event.target.parentNode)
     const options = {
         "method": 'DELETE',
         "mode": 'cors',
@@ -68,7 +67,7 @@ const onClickDeletePost = async (event, postId) => {
         const response = await fetch(`http://localhost:3000/posts/${postId}`, options)
         
         if (response.ok) {
-            deletePost(event.target, postId);
+            deletePost(postId);
             alert("The post were deleted");
         } else {
             if(response.status === 403) {
